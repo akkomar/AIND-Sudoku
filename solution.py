@@ -72,6 +72,17 @@ def display(values):
 
 
 def eliminate(values):
+    """
+    Eliminate values from peers of each box with a single value.
+
+    Go through all the boxes, and whenever there is a box with a single value,
+    eliminate this value from the set of values of all its peers.
+
+    Args:
+        values: Sudoku in dictionary form.
+    Returns:
+        Resulting Sudoku in dictionary form after eliminating values.
+    """
     for box, v in values.items():
         if len(v) == 1:
             for peer in peers[box]:
@@ -82,6 +93,17 @@ def eliminate(values):
 
 
 def only_choice(values):
+    """
+    Finalize all values that are the only choice for a unit.
+
+    Go through all the units, and whenever there is a unit with a value
+    that only fits in one box, assign the value to this box.
+
+    Args:
+        values: Sudoku in dictionary form.
+    Returns:
+        Resulting Sudoku in dictionary form after filling in only choices.
+    """
     for unit in unitlist:
         for digit in '123456789':
             digit_boxes = [box for box in unit if digit in values[box]]
@@ -91,6 +113,14 @@ def only_choice(values):
 
 
 def reduce_puzzle(values):
+    """
+    Apply eliminate, only choice and naked twins strategies.
+    When we stop making progress, return the sudoku values. If at any point there's a box with no available values, return False.
+    Args:
+        values: Sudoku in dictionary form.
+    Returns:
+        Resulting Sudoku in dictionary form.
+    """
     stalled = False
     while not stalled:
         # Check how many boxes have a determined value
@@ -100,6 +130,8 @@ def reduce_puzzle(values):
         values = eliminate(values)
         # Only Choice Strategy
         values = only_choice(values)
+        # Naked twins strategy
+        values = naked_twins(values)
         # Check how many boxes have a determined value, to compare
         solved_values_after = len([box for box in values.keys() if len(values[box]) == 1])
         # If no new values were added, stop the loop.
@@ -111,7 +143,7 @@ def reduce_puzzle(values):
 
 
 def search(values):
-    "Using depth-first search and propagation, create a search tree and solve the sudoku."
+    """Using depth-first search and propagation, create a search tree and solve the sudoku."""
     # First, reduce the puzzle
     values = reduce_puzzle(values)
     if values is False:
